@@ -1,1 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    // criado por Leonardo Gomes: MR_GOMES
+    <title>Matrix Digital system by:MR_GOMES</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #0f0;
+            height: 100vh;
+            position: relative;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .matrix-title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0;
+            z-index: 10;
+            opacity: 0.8;
+            animation: pulse 3s infinite alternate;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.9; }
+        }
+
+        .subtitle {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            text-shadow: 0 0 5px #0f0;
+            z-index: 10;
+            opacity: 0.7;
+            animation: pulse 4s infinite alternate-reverse;
+        }
+
+        .canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            background-color: rgba(0, 15, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #0f0;
+            box-shadow: 0 0 10px #0f0;
+        }
+
+        .controls button {
+            background-color: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px 10px;
+            margin: 0 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+
+        .controls button:hover {
+            background-color: #0f0;
+            color: #000;
+            box-shadow: 0 0 10px #0f0;
+        }
+
+        .info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            text-align: right;
+        }
+
+        /* Efeito de brilho nos cantos */
+        .corner {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            z-index: 5;
+        }
+
+        .corner-tl {
+            top: 0;
+            left: 0;
+            border-top: 2px solid #0f0;
+            border-left: 2px solid #0f0;
+            box-shadow: -5px -5px 15px #0f0;
+        }
+
+        .corner-tr {
+            top: 0;
+            right: 0;
+            border-top: 2px solid #0f0;
+            border-right: 2px solid #0f0;
+            box-shadow: 5px -5px 15px #0f0;
+        }
+
+        .corner-bl {
+            bottom: 0;
+            left: 0;
+            border-bottom: 2px solid #0f0;
+            border-left: 2px solid #0f0;
+            box-shadow: -5px 5px 15px #0f0;
+        }
+
+        .corner-br {
+            bottom: 0;
+            right: 0;
+            border-bottom: 2px solid #0f0;
+            border-right: 2px solid #0f0;
+            box-shadow: 5px 5px 15px #0f0;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .matrix-title {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="matrix-title">MATRIX</div>
+        <div class="subtitle">Sistema Digital</div>
+        
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div>
+        <div class="corner corner-br"></div>
+        
+        <div class="canvas-container">
+            <canvas id="matrix"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="pauseBtn">Pausar</button>
+            <button id="speedUpBtn">Acelerar</button>
+            <button id="speedDownBtn">Desacelerar</button>
+            <button id="colorBtn">Mudar Cor</button>
+        </div>
+        
+        <div class="info">
+            Efeito Matrix<br>
+            Clique para interagir
+        </div>
+    </div>
+
+    <script>
+        // Configuração do canvas
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        
+        // Ajustar canvas para o tamanho da tela
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Caracteres para o efeito Matrix (incluindo alguns caracteres especiais)
+        const chars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=[]{}|;:,.<>?/";
+        const charArray = chars.split("");
+        
+        // Configurações do efeito
+        let fontSize = 14;
+        let columns = Math.floor(canvas.width / fontSize);
+        let drops = [];
+        let speed = 20;
+        let color = '#0f0';
+        let isPaused = false;
+        
+        // Inicializar as gotas
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
+        }
+        
+        // Desenhar o efeito Matrix
+        function draw() {
+            // Fundo semi-transparente para criar rastro
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Cor do texto
+            ctx.fillStyle = color;
+            ctx.font = `${fontSize}px monospace`;
+            
+            // Desenhar os caracteres
+            for (let i = 0; i < drops.length; i++) {
+                // Caractere aleatório
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                
+                // Desenhar o caractere
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                // Reiniciar a gota quando chegar ao fundo
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                // Mover a gota para baixo
+                if (!isPaused) {
+                    drops[i]++;
+                }
+            }
+        }
+        
+        // Loop de animação
+        function animate() {
+            draw();
+            setTimeout(() => {
+                requestAnimationFrame(animate);
+            }, 1000 / speed);
+        }
+        
+        // Iniciar animação
+        animate();
+        
+        // Controles
+        document.getElementById('pauseBtn').addEventListener('click', function() {
+            isPaused = !isPaused;
+            this.textContent = isPaused ? 'Continuar' : 'Pausar';
+        });
+        
+        document.getElementById('speedUpBtn').addEventListener('click', function() {
+            speed = Math.min(speed + 5, 60);
+        });
+        
+        document.getElementById('speedDownBtn').addEventListener('click', function() {
+            speed = Math.max(speed - 5, 5);
+        });
+        
+        document.getElementById('colorBtn').addEventListener('click', function() {
+            const colors = ['#0f0', '#0ff', '#f0f', '#ff0', '#f00', '#0af'];
+            color = colors[Math.floor(Math.random() * colors.length)];
+        });
+        
+        // Efeito de interação ao clicar
+        canvas.addEventListener('click', function(e) {
+            // Criar uma explosão de caracteres no local do clique
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const size = Math.random() * 30 + 10;
+                    ctx.font = `${size}px monospace`;
+                    ctx.fillStyle = color;
+                    const char = charArray[Math.floor(Math.random() * charArray.length)];
+                    ctx.fillText(char, x + (Math.random() * 100 - 50), y + (Math.random() * 100 - 50));
+                }, i * 50);
+            }
+        });
+    </script>
+</body>
+</html>
